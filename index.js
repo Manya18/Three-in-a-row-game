@@ -11,14 +11,14 @@ let config = {
   gemSize: 50,
 
   colorsCoins: [
-    "red",
-    "orange",
-    "yellow",
-    "green",
-    "blue",
-    "darkblue",
-    "violet",
-    "pink",
+    "#7851A9", //королевский пурпурный
+    "#DD80CC", //пурпур
+    "#082567", //индиго
+    "#FFD700", //золотой
+    "#21421E", //миртовый
+    "#8CCB5E", //желтовато-зеленый
+    "#A5260A", //бисмарк-фуриозо(темно-оранжевый)
+    "#3EB489", //мятный
   ],
 
   gemClass: "gem",
@@ -168,6 +168,7 @@ function createGem(t, l, row, column, color) {
   coin.style.width = config.gemSize + "px";
   coin.style.height = config.gemSize + "px";
   coin.style.border = "1px solid transparent";
+  coin.style.borderRadius = "50%";
   coin.style.backgroundColor = color;
 
   components.wrapper.append(coin);
