@@ -29,6 +29,8 @@ let config = {
   movingItems: 0,
 
   countScore: 0,
+
+  gameTime: 60,
 };
 
 // хранится текущий выбор игрока
@@ -47,6 +49,7 @@ let components = {
   cursor: document.createElement("div"),
   score: document.createElement("div"),
   gems: new Array(),
+  timer: document.createElement("div"),
 };
 
 initGame();
@@ -59,6 +62,7 @@ function initGame() {
   createCursor();
   createGrid();
   createScore();
+  createTimer();
   config.gameState = config.gameStates[0]; //статус выбор
 }
 
@@ -128,7 +132,7 @@ function createScore() {
   components.score.style.position = "absolute";
   components.score.style.bottom = "calc(100% + " + 24 + "px)";
   components.score.style.left =
-    "calc(50% - " + parseInt(components.score.style.width) / 2 + "px)";
+  config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px";
 
   components.score.style.fontFamily = "sans-serif";
   components.score.style.fontSize = "16px";
@@ -154,6 +158,40 @@ function scoreInc(count) {
   config.countScore += count;
   updateScore();
 }
+
+function createTimer() {
+  components.timer.style.width = 200 + "px";
+  components.timer.style.height = 50 + "px";
+  components.timer.style.display = "flex";
+  components.timer.style.justifyContent = "center";
+  components.timer.style.alignItems = "center";
+  components.timer.style.borderRadius = config.borderRadius + "px";
+  components.timer.style.backgroundColor = config.contentColorBG;
+  components.timer.style.position = "absolute";
+  components.timer.style.bottom = "calc(100% + " + 24 + "px)";
+  components.timer.style.left = 0;
+
+  components.timer.style.fontFamily = "sans-serif";
+  components.timer.style.fontSize = "16px";
+  components.timer.style.color = "#ffffff";
+
+  updateTimer();
+}
+
+function updateTimer() {
+  config.gameTime --;
+  let curTime = config.gameTime;
+  if(config.gameTime < 10) curTime = "0" + curTime;
+  components.timer.innerHTML = "00:" + curTime;
+  components.wrapper.append(components.timer);
+}
+
+let timerInterval = setInterval(updateTimer, 1000);
+
+setTimeout(function() {
+  clearInterval(timerInterval);
+  stopGame();
+}, 59000)
 
 function createGem(t, l, row, column, color) {
   let coin = document.createElement("div");
@@ -622,4 +660,8 @@ function placeNewGems() {
       player.selectedRow = -1;
     }
   }
+}
+
+function stopGame() {
+  console.log("stop");
 }
