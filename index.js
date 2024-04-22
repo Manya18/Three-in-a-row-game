@@ -10,6 +10,9 @@ let config = {
 
   gemSize: 50,
 
+  gameTime: 60,
+  restOfTime: 0,
+
   colorsCoins: [
     "#7851A9", //королевский пурпурный
     "#DD80CC", //пурпур
@@ -18,7 +21,7 @@ let config = {
     "#21421E", //миртовый
     "#8CCB5E", //желтовато-зеленый
     "#A5260A", //бисмарк-фуриозо(темно-оранжевый)
-    "#3EB489", //мятный
+    "#db8b00", //оранжевый
   ],
 
   gemClass: "gem",
@@ -30,7 +33,8 @@ let config = {
 
   countScore: 0,
 
-  gameTime: 60,
+  timerCount: null,
+  intervalTimerCount: null,
 };
 
 // хранится текущий выбор игрока
@@ -50,6 +54,9 @@ let components = {
   score: document.createElement("div"),
   gems: new Array(),
   timer: document.createElement("div"),
+  modalWindow: document.createElement("dialog"),
+  controlButton: document.createElement("button"),
+  toRecordButton: document.createElement("button"),
 };
 
 initGame();
@@ -59,11 +66,141 @@ function initGame() {
   createPage();
   createContentPage();
   createWrapper();
+  createButton(
+    components.toRecordButton,
+    "Таблица рекордов",
+    function () {
+      document.location = "/recordTable.html";
+    },
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 300 + "px",
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",
+  );
+
   createCursor();
   createGrid();
   createScore();
   createTimer();
+  createButton(
+    components.controlButton,
+    "Начать",
+    startGame,
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px",
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",  
+  );
+}
+
+function startGame() {
+  config.restOfTime = config.gameTime;
+  config.countScore = 0;
+
   config.gameState = config.gameStates[0]; //статус выбор
+  createButton(
+    components.controlButton,
+    "Стоп",
+    stopGame,
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px",
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",  
+  );
+
+  createTimer();
+  startTimer();
+
+  updateScore();
+}
+
+function stopGame() {
+  resetTimer();
+
+  createButton(
+    components.controlButton,
+    "Начать",
+    startGame,
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px",
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",  
+  );
+  createModal();
+
+  console.log("stop");
+}
+
+function startTimer() {
+  config.intervalTimerCount = setInterval(updateTimer, 1000);
+  config.timerCount = setTimeout(stopGame, config.gameTime * 1000);
+}
+
+function resetTimer() {
+  clearInterval(config.intervalTimerCount);
+  clearTimeout(config.timerCount);
+}
+
+function createModal() {
+  components.modalWindow.innerHTML = "";
+
+  components.modalWindow.style.display = "flex";
+  components.modalWindow.style.flexDirection = "column";
+  components.modalWindow.style.justifyContent = "center";
+  components.modalWindow.style.alignItems = "center";
+  components.modalWindow.style.gap = 20 + "px";
+  components.modalWindow.style.padding = 20 + "px";
+  components.modalWindow.style.borderRadius = 10 + "px";
+  components.modalWindow.style.border = "none";
+  components.modalWindow.style.backgroundColor = "#525053";
+  components.modalWindow.style.color = "#ffffff";
+
+  let text = `Вы набрали ${config.countScore} очков.`;
+
+  let form = document.createElement("form");
+  form.style.display = "flex";
+  form.style.flexDirection = "column";
+  form.style.alignItems = "center";
+  form.style.gap = 10 + "px";
+
+  let label = document.createElement("label");
+  label.textContent = "Ваше имя ";
+
+  let input = document.createElement("input");
+  input.style.borderRadius = 10 + "px";
+  input.type = "text";
+
+  label.append(input);
+
+  let submit = document.createElement("button");
+  submit.style.display = "inline";
+  submit.style.padding = 10 + "px";
+  submit.style.borderRadius = 10 + "px";
+
+  submit.textContent = "Отправить";
+  submit.onclick = function () {
+    saveRecord(input.value);
+  };
+
+  form.append(label, submit);
+
+  components.modalWindow.append(text, form);
+
+  document.body.append(components.modalWindow);
+  components.modalWindow.showModal();
+}
+
+function saveRecord(value) {
+  if (config.countScore > 0 && value != "")
+    localStorage.setItem(value, config.countScore);
+}
+
+function createButton(button, btnText, btnFunc, bottom, left) {
+  button.style.minWidth = 170 + "px";
+  button.style.padding = 10 + "px";
+  button.style.border = "none";
+  button.style.borderRadius = "10px";
+  button.style.fontSize = "16px";
+  button.style.position = "absolute";
+  button.style.bottom = bottom;
+  button.style.left = left;
+
+  button.innerText = btnText;
+  button.onclick = btnFunc;
+
+  components.wrapper.append(button);
 }
 
 function createPage() {
@@ -122,7 +259,7 @@ function cursorHide() {
 }
 
 function createScore() {
-  components.score.style.width = 200 + "px";
+  components.score.style.width = 150 + "px";
   components.score.style.height = 50 + "px";
   components.score.style.display = "flex";
   components.score.style.justifyContent = "center";
@@ -130,9 +267,8 @@ function createScore() {
   components.score.style.borderRadius = config.borderRadius + "px";
   components.score.style.backgroundColor = config.contentColorBG;
   components.score.style.position = "absolute";
-  components.score.style.bottom = "calc(100% + " + 24 + "px)";
-  components.score.style.left =
-  config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px";
+  components.score.style.bottom = config.gemSize * config.countRows + config.offsetBorder * 2 + "px",
+  components.score.style.left = config.gemSize * config.countRows + config.offsetBorder * 2 - 170 + "px",
 
   components.score.style.fontFamily = "sans-serif";
   components.score.style.fontSize = "16px";
@@ -160,7 +296,7 @@ function scoreInc(count) {
 }
 
 function createTimer() {
-  components.timer.style.width = 200 + "px";
+  components.timer.style.width = 150 + "px";
   components.timer.style.height = 50 + "px";
   components.timer.style.display = "flex";
   components.timer.style.justifyContent = "center";
@@ -168,30 +304,23 @@ function createTimer() {
   components.timer.style.borderRadius = config.borderRadius + "px";
   components.timer.style.backgroundColor = config.contentColorBG;
   components.timer.style.position = "absolute";
-  components.timer.style.bottom = "calc(100% + " + 24 + "px)";
-  components.timer.style.left = 0;
+  components.timer.style.bottom = config.gemSize * config.countRows + config.offsetBorder * 2 + "px";
+  components.timer.style.left = config.gemSize * config.countRows + config.offsetBorder * 2 - 520 + "px";
 
   components.timer.style.fontFamily = "sans-serif";
   components.timer.style.fontSize = "16px";
   components.timer.style.color = "#ffffff";
 
-  updateTimer();
-}
-
-function updateTimer() {
-  config.gameTime --;
-  let curTime = config.gameTime;
-  if(config.gameTime < 10) curTime = "0" + curTime;
-  components.timer.innerHTML = "00:" + curTime;
+  components.timer.innerHTML = "01:00";
   components.wrapper.append(components.timer);
 }
 
-let timerInterval = setInterval(updateTimer, 1000);
-
-setTimeout(function() {
-  clearInterval(timerInterval);
-  stopGame();
-}, 59000)
+function updateTimer() {
+  config.restOfTime--;
+  let curTime = config.restOfTime;
+  if (config.restOfTime < 10) curTime = "0" + curTime;
+  components.timer.innerHTML = "00:" + curTime;
+}
 
 function createGem(t, l, row, column, color) {
   let coin = document.createElement("div");
@@ -347,11 +476,12 @@ function gemSwitch() {
       "#" + config.gemIdPrefix + "_" + player.posY + "_" + player.posX
     )
     .classList.add("switch");
-  document.querySelector("#" + config.gemIdPrefix + "_" + player.posY + "_" + player.posX).setAttribute("dir", "1");
+  document
+    .querySelector(
+      "#" + config.gemIdPrefix + "_" + player.posY + "_" + player.posX
+    )
+    .setAttribute("dir", "1");
 
-
-
-  //jquery
   document.querySelectorAll(".switch").forEach(function (elem) {
     config.movingItems++;
 
@@ -362,20 +492,45 @@ function gemSwitch() {
     let newLeft = currentLeft + xOffset * config.gemSize * dir;
     let newTop = currentTop + yOffset * config.gemSize * dir;
 
-    animateMoveElem(elem, {left: newLeft, top: newTop}, 250, function() {
-      checkMoving()
+    animateMoveElem(elem, { left: newLeft, top: newTop }, 250, function () {
+      checkMoving();
     });
 
     elem.classList.remove("switch");
   });
 
-  document.querySelector("#" + config.gemIdPrefix + "_" + player.selectedRow + "_" + player.selectedColumn).setAttribute("id", "temp");
-  document.querySelector("#" + config.gemIdPrefix + "_" + player.posY + "_" + player.posX)
-  .setAttribute("id", config.gemIdPrefix + "_" + player.selectedRow + "_" + player.selectedColumn);
-  document.querySelector("#temp").setAttribute("id", config.gemIdPrefix + "_" + player.posY + "_" + player.posX);
+  document
+    .querySelector(
+      "#" +
+        config.gemIdPrefix +
+        "_" +
+        player.selectedRow +
+        "_" +
+        player.selectedColumn
+    )
+    .setAttribute("id", "temp");
+  document
+    .querySelector(
+      "#" + config.gemIdPrefix + "_" + player.posY + "_" + player.posX
+    )
+    .setAttribute(
+      "id",
+      config.gemIdPrefix +
+        "_" +
+        player.selectedRow +
+        "_" +
+        player.selectedColumn
+    );
+  document
+    .querySelector("#temp")
+    .setAttribute(
+      "id",
+      config.gemIdPrefix + "_" + player.posY + "_" + player.posX
+    );
 
   let temp = components.gems[player.selectedRow][player.selectedColumn];
-  components.gems[player.selectedRow][player.selectedColumn] = components.gems[player.posY][player.posX];
+  components.gems[player.selectedRow][player.selectedColumn] =
+    components.gems[player.posY][player.posX];
   components.gems[player.posY][player.posX] = temp;
 }
 
@@ -384,7 +539,7 @@ function animateMoveElem(elem, properties, duration, callback) {
   let initialValue = {};
   let changes = {};
 
-  for(let prop in properties) {
+  for (let prop in properties) {
     initialValue[prop] = parseFloat(elem.style[prop]) || 0;
     changes[prop] = properties[prop] - initialValue[prop];
   }
@@ -462,7 +617,9 @@ function removeGems(row, col) {
 
   if (isVerticalStreak(row, col)) {
     while (tmp > 0 && components.gems[tmp - 1][col] == gemValue) {
-      document.querySelector("#" + config.gemIdPrefix + "_" + (tmp - 1) + "_" + col).classList.add("remove");
+      document
+        .querySelector("#" + config.gemIdPrefix + "_" + (tmp - 1) + "_" + col)
+        .classList.add("remove");
       components.gems[tmp - 1][col] = -1;
       tmp--;
       countRemoveGem++;
@@ -474,7 +631,9 @@ function removeGems(row, col) {
       tmp < config.countRows - 1 &&
       components.gems[tmp + 1][col] == gemValue
     ) {
-      document.querySelector("#" + config.gemIdPrefix + "_" + (tmp + 1) + "_" + col).classList.add("remove");
+      document
+        .querySelector("#" + config.gemIdPrefix + "_" + (tmp + 1) + "_" + col)
+        .classList.add("remove");
       components.gems[tmp + 1][col] = -1;
       tmp++;
       countRemoveGem++;
@@ -511,7 +670,6 @@ function removeGems(row, col) {
   scoreInc(countRemoveGem);
 }
 
-//jquery
 function gemFade() {
   document.querySelectorAll(".remove").forEach(function (elem) {
     config.movingItems++;
@@ -569,10 +727,15 @@ function checkFalling() {
 
     let currentTop = parseInt(elem.style.top) || 0;
 
-    animateVerticalPosition(elem, {top: currentTop + config.gemSize}, 100, function () {
-      elem.classList.remove("fall");
-      checkMoving();
-    });
+    animateVerticalPosition(
+      elem,
+      { top: currentTop + config.gemSize },
+      100,
+      function () {
+        elem.classList.remove("fall");
+        checkMoving();
+      }
+    );
   });
 
   if (fellDown == 0) {
@@ -587,7 +750,7 @@ function animateVerticalPosition(elem, properties, duration, callback) {
   let initialValue = {};
   let changes = {};
 
-  for(let prop in properties) {
+  for (let prop in properties) {
     initialValue[prop] = parseInt(elem.style[prop]) || 0;
     changes[prop] = properties[prop] - initialValue[prop];
   }
@@ -596,17 +759,17 @@ function animateVerticalPosition(elem, properties, duration, callback) {
     let elapsed = time - start;
     let progress = Math.min(elapsed / duration, 1);
 
-    for(let prop in changes) {
+    for (let prop in changes) {
       let value = initialValue[prop] + changes[prop] * progress;
       elem.style[prop] = value + "px";
     }
 
-    if(progress < 1) {
+    if (progress < 1) {
       requestAnimationFrame(animateVerticalPosition);
     } else {
-      if(typeof callback === "function") callback();
+      if (typeof callback === "function") callback();
     }
-  })
+  });
 }
 
 function placeNewGems() {
@@ -660,8 +823,4 @@ function placeNewGems() {
       player.selectedRow = -1;
     }
   }
-}
-
-function stopGame() {
-  console.log("stop");
 }
