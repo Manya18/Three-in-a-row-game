@@ -35,28 +35,31 @@ function createTitle() {
 function createTable() {
   components.table.style.border = "1px solid white";
   components.table.style.borderCollapse = "collapse";
-
-  for (let i = 0; i < localStorage.length; i++) {
+  const storage = sortStorage();
+  console.log(storage)
+  storage.forEach(elem => {
     let tr = document.createElement("tr");
 
-    let key = createTd(localStorage.key(i));
-    let value = createTd(localStorage.getItem(key.textContent));
+    let key = createTd(elem.key);
+    let value = createTd(elem.value);
     tr.append(key, value);
 
     components.table.append(tr);
-  }
+  })
   components.wrapper.append(components.table);
 }
 
 function sortStorage() {
-    let arr = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    let key = createTd(localStorage.key(i));
-    let value = createTd(localStorage.getItem(key.textContent));
-    tr.append(key, value);
+  const keys = Object.keys(localStorage);
+  const keyValuePairs = [];
 
-    components.table.append(tr);
-  }
+  keys.forEach((key) => {
+    const value = localStorage.getItem(key);
+    keyValuePairs.push({ key, value });
+  });
+  keyValuePairs.sort((a, b) => a.value.localeCompare(b.value));
+
+  return keyValuePairs;
 }
 
 function createTd(text) {
@@ -77,7 +80,7 @@ function createBackButton() {
   components.backButton.style.padding = "10px";
   components.backButton.style.margin = "25px";
   components.backButton.style.fontSize = "20px";
-  btn.style.border = "none";
+  components.backButton.style.border = "none";
   components.backButton.style.borderRadius = "10px";
 
   components.backButton.onclick = function () {

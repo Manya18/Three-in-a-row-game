@@ -73,9 +73,8 @@ function initGame() {
       document.location = "/recordTable.html";
     },
     config.gemSize * config.countColumns + config.offsetBorder * 2 - 300 + "px",
-    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px"
   );
-
   createCursor();
   createGrid();
   createScore();
@@ -85,7 +84,7 @@ function initGame() {
     "Начать",
     startGame,
     config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px",
-    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",  
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px"
   );
 }
 
@@ -99,10 +98,9 @@ function startGame() {
     "Стоп",
     stopGame,
     config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px",
-    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",  
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px"
   );
 
-  createTimer();
   startTimer();
 
   updateScore();
@@ -116,7 +114,7 @@ function stopGame() {
     "Начать",
     startGame,
     config.gemSize * config.countColumns + config.offsetBorder * 2 - 220 + "px",
-    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px",  
+    config.gemSize * config.countColumns + config.offsetBorder * 2 - 730 + "px"
   );
   createModal();
 
@@ -160,6 +158,7 @@ function createModal() {
 
   let input = document.createElement("input");
   input.style.borderRadius = 10 + "px";
+  input.style.border = "none";
   input.type = "text";
 
   label.append(input);
@@ -168,6 +167,7 @@ function createModal() {
   submit.style.display = "inline";
   submit.style.padding = 10 + "px";
   submit.style.borderRadius = 10 + "px";
+  submit.style.border = "none";
 
   submit.textContent = "Отправить";
   submit.onclick = function () {
@@ -267,10 +267,11 @@ function createScore() {
   components.score.style.borderRadius = config.borderRadius + "px";
   components.score.style.backgroundColor = config.contentColorBG;
   components.score.style.position = "absolute";
-  components.score.style.bottom = config.gemSize * config.countRows + config.offsetBorder * 2 + "px",
-  components.score.style.left = config.gemSize * config.countRows + config.offsetBorder * 2 - 170 + "px",
-
-  components.score.style.fontFamily = "sans-serif";
+  (components.score.style.bottom =
+    config.gemSize * config.countRows + config.offsetBorder * 2 + "px"),
+    (components.score.style.left =
+      config.gemSize * config.countRows + config.offsetBorder * 2 - 170 + "px"),
+    (components.score.style.fontFamily = "sans-serif");
   components.score.style.fontSize = "16px";
   components.score.style.color = "#ffffff";
 
@@ -304,8 +305,10 @@ function createTimer() {
   components.timer.style.borderRadius = config.borderRadius + "px";
   components.timer.style.backgroundColor = config.contentColorBG;
   components.timer.style.position = "absolute";
-  components.timer.style.bottom = config.gemSize * config.countRows + config.offsetBorder * 2 + "px";
-  components.timer.style.left = config.gemSize * config.countRows + config.offsetBorder * 2 - 520 + "px";
+  components.timer.style.bottom =
+    config.gemSize * config.countRows + config.offsetBorder * 2 + "px";
+  components.timer.style.left =
+    config.gemSize * config.countRows + config.offsetBorder * 2 - 520 + "px";
 
   components.timer.style.fontFamily = "sans-serif";
   components.timer.style.fontSize = "16px";
@@ -499,16 +502,7 @@ function gemSwitch() {
     elem.classList.remove("switch");
   });
 
-  document
-    .querySelector(
-      "#" +
-        config.gemIdPrefix +
-        "_" +
-        player.selectedRow +
-        "_" +
-        player.selectedColumn
-    )
-    .setAttribute("id", "temp");
+  document.querySelector("#" + config.gemIdPrefix + "_" + player.selectedRow + "_" + player.selectedColumn).setAttribute("id", "temp");
   document
     .querySelector(
       "#" + config.gemIdPrefix + "_" + player.posY + "_" + player.posX
